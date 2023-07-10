@@ -17,7 +17,7 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
 
         super(GraphicalUserInterface, self).__init__(parent)                      # Ausführen der __init__ der Elternklasse
         self.setupUi(self)                                              # Initialisierung des User Interface
-        self.client_socket = socket.socket()
+        #self.client_socket = socket.socket()
 
         # Signals and Slots der einzelnen Elemente verbinden (Ein guter Anfang sind eine Sendebox und eine Anzeige für das Chatprotokoll)
         self.LogIn.clicked.connect(self.on_connectButtonClicked)
@@ -36,6 +36,7 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
 
         # Verbidnung mit dem Server aufbauen (Auslesen der Eingaben der Informationen über host und port)
         try:
+            self.client_socket = socket.socket()
             host = self.IPAdresse.text()
             port = int(self.Port.text())
             self.client_socket.connect((host, int(port)))
@@ -54,27 +55,47 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
 
 
     def on_sendButtonClicked(self):
-        """
-        Diese Funktion wird aufgerufen, sobald der Sendeknopf gedrückt wird.
+        try:
+            """
+            Diese Funktion wird aufgerufen, sobald der Sendeknopf gedrückt wird.
 
-        """
-        # Einlesen, der z.B. im TextBrowser Objekt eingegebenen Nachricht
-        msg = self.Gruppenchat.text()
-        #print(msg)
+            """
+            # Einlesen, der z.B. im TextBrowser Objekt eingegebenen Nachricht
+            msg = self.Gruppenchat.text()
+            #print(msg)
 
-        #Senden der eingegebenen Daten an den Server
-        self.client_socket.send(msg.encode())
-        self.Gruppenchat.clear()
+            #Senden der eingegebenen Daten an den Server
+            self.client_socket.send(msg.encode())
+            self.Gruppenchat.clear()
+        except Exception as e: 
+            print(e)
+            color = '#FF0000'
+            line = "\n Server ist nicht erreichbar! \n"
+            self.Display.append(f"<span style='color:{color}'>{line}</span><br>")
+            self.disconnect()
 
     def on_sendToButtonClicked(self):
-        msg = "@" + self.Anderernutzer.text() + "|" + self.Privatnachricht.text()
-        self.client_socket.send(msg.encode())
-        self.Anderernutzer.clear()
-        self.Privatnachricht.clear()
+        try:
+            msg = "@" + self.Anderernutzer.text() + "|" + self.Privatnachricht.text()
+            self.client_socket.send(msg.encode())
+            self.Anderernutzer.clear()
+            self.Privatnachricht.clear()
+        except Exception as e: 
+            print(e)
+            color = '#FF0000'
+            line = "\n Server ist nicht erreichbar! \n"
+            self.Display.append(f"<span style='color:{color}'>{line}</span><br>")
+
 
     def on_PNaktideaktiClicked(self):
-        msg = "!§%&/()=€"
-        self.client_socket.send(msg.encode())
+        try:
+            msg = "!§%&/()=€"
+            self.client_socket.send(msg.encode())
+        except Exception as e: 
+            print(e)
+            color = '#FF0000'
+            line = "\n Server ist nicht erreichbar! \n"
+            self.Display.append(f"<span style='color:{color}'>{line}</span><br>")
 
     def _receiving_thread(self):
         # Laden des Chatverlaufs aus der Textdatei
@@ -112,8 +133,9 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
                     self.Display.append(message)
                     print ("das ist im else: " + message)
                     print('datentyptype' , type (message))
-            except:
-                self.Display.append("Der Chatlog konnte nicht geladen werden.")
+            except Exception as e: 
+                print('Fehler bei dem LAden der Log Datei', e)
+
     def on_exitButtonClicked(self):
         # Code für den Disconnect vom Server
         
@@ -134,6 +156,8 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
         if self.client_socket and self.client_socket.fileno() != -1:  # Überprüfe, ob der Socket geöffnet ist
             self.client_socket.close()
 
+
+  
 
 
 # main Funktion
