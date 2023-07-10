@@ -107,7 +107,7 @@ def client_thread(conn, addr):
                     # Weiterleitung der Nachricht an alle anderen clients 
         except ConnectionResetError:
             print(f'Verbindung verloren {conn}')
-            remove_user(Nickname)
+            remove_user(Nickname, conn)
             conn.close()
 
 
@@ -122,15 +122,19 @@ def send_to_all(msg_str):
     
     # Clientliste durchlaufen und msg_str senden
 
-def remove_user(nickname):
-    if nickname in Benutzer:
-        del Benutzer[nickname]
-        print(f"{nickname} wurde entfernt")
-        send_to_all(f"{nickname} hat den Chat verlassen\n")
-    else:
-        print(f"{nickname} nicht gefunden")
-    
-
+def remove_user(nickname, conn):
+    try:
+        if nickname in Benutzer:
+            del Benutzer[nickname]
+            print(f"{nickname} wurde entfernt")
+            send_to_all(f"{nickname} hat den Chat verlassen\n")
+        else:
+            print(f"{nickname} nicht gefunden")
+        Clientliste.remove(conn)
+        print (Clientliste)
+        print (Benutzer)
+    except: 
+        print(nickname, conn, 'existiert nicht')
 
 
 

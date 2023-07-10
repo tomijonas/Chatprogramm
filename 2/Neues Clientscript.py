@@ -35,14 +35,22 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
         """
 
         # Verbidnung mit dem Server aufbauen (Auslesen der Eingaben der Informationen über host und port)
-        host = self.IPAdresse.text()
-        port = int(self.Port.text())
-        self.client_socket.connect((host, int(port)))
-        nickname = self.Nutzername.text()
+        try:
+            host = self.IPAdresse.text()
+            port = int(self.Port.text())
+            self.client_socket.connect((host, int(port)))
+            nickname = self.Nutzername.text()
+            threading.Thread(target = self._receiving_thread).start()
+            self.client_socket.send(nickname.encode())
+        except Exception as e: 
+            print(e)
+            color = '#FF0000'
+            line = "\n Ein Fehler ist aufgetreten \n"
+            self.Display.append(f"<span style='color:{color}'>{line}</span><br>")
+
         #Starten eines neuen Threads für den kontinuierlichen Empfang von Signalen. 
 
-        threading.Thread(target = self._receiving_thread).start()
-        self.client_socket.send(nickname.encode())
+        
 
 
     def on_sendButtonClicked(self):
@@ -82,7 +90,7 @@ class GraphicalUserInterface(QtWidgets.QMainWindow, Ui_Dialog):
             #print(message)
             try:
                 if message.startswith("<span") or message.startswith("<br>") and message.endswith("</span>") or message.endswith("<br>"):
-                    start_index = message.find(">")
+                    start_index = message.find(">", 4,-1)
                     end_index = message.rfind("<")
                     formatted_text = message[start_index + 1 : end_index]
 
